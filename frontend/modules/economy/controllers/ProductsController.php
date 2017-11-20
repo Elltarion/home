@@ -5,6 +5,8 @@ namespace app\modules\economy\controllers;
 use Yii;
 use app\modules\economy\models\Products;
 use app\modules\economy\models\ProductsSearch;
+use app\modules\economy\models\EconomyProductCountRanges;
+use app\modules\economy\models\EconomyCountRangeTypes;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -36,7 +38,9 @@ class ProductsController extends Controller
     public function actionIndex()
     {
         $searchModel = new ProductsSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $params = Yii::$app->request->queryParams;
+        $params['pageSize'] = 15;
+        $dataProvider = $searchModel->search($params);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -66,7 +70,7 @@ class ProductsController extends Controller
         $model = new Products();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['view', 'id' => $model->product_id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
@@ -83,12 +87,39 @@ class ProductsController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            if(isset(Yii::$app->request->post()['count_ranges'])) {
+                foreach(Yii::$app->request->post()['count_ranges'] as $range) {
+                    $range['pcr_product'] = $id;
+                    $rangeDBObject = EconomyProductCountRanges::find()->andWhere(['=', 'pcr_product', $id])->andWhere(['=', 'pcr_type', $range['pcr_type']])->one();
+
+                    if($rangeDBObject) {
+                        $rangeDBObject->pcr_value = $range['pcr_value'];
+                        $rangeDBObject->save(false);
+                    } else {
+                        $modelRange = new EconomyProductCountRanges();
+                        $modelRange->load(['EconomyProductCountRanges' => $range]);
+                        $modelRange->save();
+                    }
+                }
+            }
+            return $this->redirect(['view', 'id' => $model->product_id]);
         } else {
+            $countRanges = EconomyProductCountRanges::find()->joinWith('type')->andWhere(['=', 'pcr_product', $id])->orderBy('clt_weight', SORT_ASC)->all();
+            $countRangeTypes = EconomyCountRangeTypes::find()->orderBy('clt_weight', SORT_ASC)->all();
+            if(!$countRanges) {
+                $modelRange = new EconomyProductCountRanges();
+                $modelRange->load(['EconomyProductCountRanges' => ['pcr_product' => $id, 'pcr_value' => 0, 'pcr_type' => 1]]);
+                $modelRange->save();
+                $countRanges = EconomyProductCountRanges::find()->joinWith('type')->andWhere(['=', 'pcr_product', $id])->orderBy('clt_weight', SORT_ASC)->all();
+            }
+
             return $this->render('update', [
                 'model' => $model,
+                'params' => [
+                    'countRanges' => $countRanges,
+                    'countRangeTypes' => $countRangeTypes
+                ]
             ]);
         }
     }

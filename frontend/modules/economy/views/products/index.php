@@ -16,7 +16,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <p>
-        <?= Html::a('Добавить продукт', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Добавить продукт', ['create'], ['class' => 'btn btn-success btn-create']) ?>
     </p>
     <?php \yii\widgets\Pjax::begin(); ?>
     <?= GridView::widget([
@@ -46,24 +46,49 @@ $this->params['breadcrumbs'][] = $this->title;
                     $count = $model->product_count > 0 ? $model->product_count : 0;
                     $color = '';
 
-                    if($count < 1) {
-                        $color = 'red';
-                    } else if($count < 2) {
-                        $color = '#ca1414';
-                    } else if($count < 3) {
-                        $color = '#fba819';
-                    } else if($count < 5) {
-                        $color = '#acad00';
-                    } else if($count >= 5) {
-                        $color = '#5cb85c';
+                    if(count($model['countRanges']) > 0) {
+                        foreach($model['countRanges'] as $range) {
+                            if($range->pcr_value <= $count) {
+                                $color = $range['type']->clt_color;
+                            }
+                        }
+                    } else {
+                        if($count == 0) {
+                            $color = 'red';
+                        } else {
+                            $color = '#000';
+                        }
+                    }
+
+                    if($count > 0) {
+                        $unit = $model['unit']['ut_name_small'];
+                        if($unit == '') {
+                            $unit = 'шт';
+                        }
+                        $count = $count .' '. $unit . '.';
                     }
 
                     return Html::tag('span', $count, ['style' => ('color: '.$color.';')]);
                 }
             ],
 
-            ['class' => 'yii\grid\ActionColumn', 'contentOptions' => ['class' => 'text-center']],
-        ],
+            ['class' => 'yii\grid\ActionColumn', 'contentOptions' => ['class' => 'text-center'], 'template'=>'{update}  {delete}',
+                'buttons'=>[
+                    'update'=>function ($url, $model) {
+                        $customurl = Yii::$app->getUrlManager()->createUrl(['/economy/products/update', 'id' => $model['product_id']]);
+                        //открываем в новой вкладке
+                        return \yii\helpers\Html::a('<span class="glyphicon glyphicon-pencil"></span>', $customurl,
+                            ['title' => Yii::t('yii', 'Редактировать'), 'data-pjax' => '0', 'target' => '_blank']);
+                    },
+                    'delete'=>function ($url, $model) {
+                        $customurl = Yii::$app->getUrlManager()->createUrl(['/economy/products/delete', 'id' => $model['product_id']]);
+                        //открываем в новой вкладке
+                        return \yii\helpers\Html::a('<span class="glyphicon glyphicon-trash"></span>', $customurl,
+                            ['title' => Yii::t('yii', 'Удалить'), 'data-confirm' => 'Удалить продукт?', 'data-method' => 'post', 'data-pjax' => '1']);
+                    }
+                ],
+            ],
+        ]
     ]); ?>
     <?php \yii\widgets\Pjax::end(); ?>
 </div>

@@ -44,7 +44,7 @@ class ProductsSearch extends Products
      */
     public function search($params)
     {
-        $query = Products::find()->joinWith('category');
+        $query = Products::find()->joinWith('unit')->joinWith('category')->joinWith('countRanges');
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
@@ -52,7 +52,7 @@ class ProductsSearch extends Products
             'pagination' => [
                 'forcePageParam' => false,
                 'pageSizeParam' => false,
-                'pageSize' => 5
+                'pageSize' => ($params['pageSize'] > 0 ? $params['pageSize'] : 10)
                 ],
             'sort'=>
                 [

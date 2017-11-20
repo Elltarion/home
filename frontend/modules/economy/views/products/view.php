@@ -6,8 +6,8 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model app\modules\economy\models\Products */
 
-$this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Products', 'url' => ['index']];
+$this->title = $model->product_name;
+$this->params['breadcrumbs'][] = ['label' => 'Продукты', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="products-view">
@@ -15,11 +15,11 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Update', ['update', 'product_id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'product_id' => $model->id], [
+        <?= Html::a('Изменить', ['update', 'id' => $model->product_id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('Удалить', ['delete', 'id' => $model->product_id], [
             'class' => 'btn btn-danger',
             'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
+                'confirm' => 'Удалить продукт?',
                 'method' => 'post',
             ],
         ]) ?>
@@ -31,7 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'product_id',
             'product_name',
             'product_description:ntext',
-            'product_category',
+            'category.category_name',
             'product_count',
         ],
     ]) ?>

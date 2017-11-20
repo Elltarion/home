@@ -5,10 +5,10 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model app\modules\economy\models\Products */
 
-$this->title = 'Update Products: ' . $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Products', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Update';
+$this->title = 'Редактировование продукта: ' . $model->product_name;
+$this->params['breadcrumbs'][] = ['label' => 'Продукты', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => $model->product_name, 'url' => ['view', 'id' => $model->product_id]];
+$this->params['breadcrumbs'][] = 'Редактирование';
 ?>
 <div class="products-update">
 
@@ -16,6 +16,7 @@ $this->params['breadcrumbs'][] = 'Update';
 
     <?= $this->render('_form', [
         'model' => $model,
+        'params' => $params,
     ]) ?>
 
 </div>

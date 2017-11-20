@@ -30,9 +30,9 @@ class Products extends \yii\db\ActiveRecord
     {
         return [
             [['product_name'], 'required'],
-            [['product_category', 'count'], 'integer'],
-            [['product_name', 'description'], 'string', 'max' => 255],
-            [['category_name', ], 'safe'],
+            [['product_category', 'product_count_unit'], 'integer'],
+            [['product_count'], 'double'],
+            [['product_name', 'product_description'], 'string', 'max' => 255],
         ];
     }
 
@@ -48,7 +48,8 @@ class Products extends \yii\db\ActiveRecord
             'product_category' => 'Категория',
             'category.category_name' => 'Категория',
             'category_name' => 'Категория',
-            'product_count' => 'Количество',
+            'product_count' => 'Наличие',
+            'product_count_unit' => 'Ед. измерения',
         ];
     }
 
@@ -61,4 +62,20 @@ class Products extends \yii\db\ActiveRecord
         return $this->hasOne(ProductsCategories::className(), ['category_id' => 'product_category']);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getUnit()
+    {
+
+        return $this->hasOne(EconomyUnitTypes::className(), ['ut_id' => 'product_count_unit']);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCountRanges()
+    {
+        return $this->hasMany(EconomyProductCountRanges::className(), ['pcr_product' => 'product_id'])->joinWith('type')->orderBy('clt_weight', SORT_ASC);
+    }
 }
