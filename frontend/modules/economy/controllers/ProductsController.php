@@ -39,7 +39,7 @@ class ProductsController extends Controller
     {
         $searchModel = new ProductsSearch();
         $params = Yii::$app->request->queryParams;
-        $params['pageSize'] = 15;
+        $params['pageSize'] = 30;
         $dataProvider = $searchModel->search($params);
 
         return $this->render('index', [
@@ -68,12 +68,35 @@ class ProductsController extends Controller
     public function actionCreate()
     {
         $model = new Products();
-
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            if(isset(Yii::$app->request->post()['count_ranges'])) {
+                foreach(Yii::$app->request->post()['count_ranges'] as $range) {
+                    $range['pcr_product'] = $model->product_id;
+                    $rangeDBObject = EconomyProductCountRanges::find()->andWhere(['=', 'pcr_product', $model->product_id])->andWhere(['=', 'pcr_type', $range['pcr_type']])->one();
+
+                    if($rangeDBObject) {
+                        $rangeDBObject->pcr_value = $range['pcr_value'];
+                        $rangeDBObject->save(false);
+                    } else {
+                        $modelRange = new EconomyProductCountRanges();
+                        $modelRange->load(['EconomyProductCountRanges' => $range]);
+                        $modelRange->save();
+                    }
+                }
+            }
             return $this->redirect(['view', 'id' => $model->product_id]);
         } else {
+            $countRangeTypes = EconomyCountRangeTypes::find()->orderBy('clt_weight', SORT_ASC)->all();
+            $countRanges = [];
+
+            $model->product_count = 0;
+
             return $this->render('create', [
                 'model' => $model,
+                'params' => [
+                    'countRanges' => $countRanges,
+                    'countRangeTypes' => $countRangeTypes
+                ]
             ]);
         }
     }
@@ -89,6 +112,13 @@ class ProductsController extends Controller
         $model = $this->findModel($id);
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             if(isset(Yii::$app->request->post()['count_ranges'])) {
+                /** @var array $allTypes - собираем все ID типов для того, чтобы удалить все лишние и сохранить ID имеющихся */
+                $allTypes = [];
+                foreach(Yii::$app->request->post()['count_ranges'] as $range) {
+                    $allTypes[$range['pcr_type']] = $range['pcr_type'];
+                }
+
+                EconomyProductCountRanges::deleteAll( ['AND', 'pcr_product = :id', ['not in', 'pcr_type', $allTypes]], [':id' => $id]);
                 foreach(Yii::$app->request->post()['count_ranges'] as $range) {
                     $range['pcr_product'] = $id;
                     $rangeDBObject = EconomyProductCountRanges::find()->andWhere(['=', 'pcr_product', $id])->andWhere(['=', 'pcr_type', $range['pcr_type']])->one();
@@ -122,6 +152,25 @@ class ProductsController extends Controller
                 ]
             ]);
         }
+    }
+
+    /**
+     * Deletes an existing Products model.
+     * If deletion is successful, the browser will be redirected to the 'index' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionChangeCountProduct()
+    {
+        if(!isset(Yii::$app->request->post()['id']) || !isset(Yii::$app->request->post()['count'])) {
+            return false;
+        }
+        $id = Yii::$app->request->post()['id'];
+        $count = Yii::$app->request->post()['count'];
+        $count = $count < 0 ? 0 : $count;
+        $product = Products::findOne($id);
+        $product->product_count = $count;
+        return $product->save();
     }
 
     /**

@@ -45,19 +45,32 @@ use app\modules\economy\models\EconomyUnitTypes;
         <?php
             /** @var array $usedTypes - использованные типы */
             $usedTypes = [];
-            foreach($params['countRanges'] as $range) {
-                $usedTypes[$range->pcr_type] = $range->pcr_type;
-                echo '<tr class="item">';
-                $disabled = '';
-                if($range->pcr_type == 1) {
-                    $disabled = 'readonly';
-                }
-                echo '<td><input class="form-control value" data-type="'.$range->pcr_type.'" data-weight="'.$range['type']->clt_weight.'" '.$disabled.' type="text" value="'.$range->pcr_value.'" name="count_ranges['.$range->pcr_type.'][pcr_value]"></td>';
-                echo '<td class="va-center">
+            if(count($params['countRanges']) > 0) {
+                foreach($params['countRanges'] as $range) {
+                    $usedTypes[$range->pcr_type] = $range->pcr_type;
+                    echo '<tr class="item">';
+                    $disabled = '';
+                    if($range->pcr_type == 1) {
+                        $disabled = 'readonly';
+                    }
+                    echo '<td><input class="form-control value" data-type="'.$range->pcr_type.'" data-weight="'.$range['type']->clt_weight.'" '.$disabled.' type="text" value="'.$range->pcr_value.'" name="count_ranges['.$range->pcr_type.'][pcr_value]"></td>';
+                    echo '<td class="va-center">
                             <input type="hidden" value="'.$range->pcr_type.'" name="count_ranges['.$range->pcr_type.'][pcr_type]">
                             <span style="color: '.$range['type']->clt_color.';">'.$range['type']->clt_name.'</span>
                         </td>';
-                echo '<td>'.($disabled != '' ? '' : Html::tag('div', '<span class="glyphicon glyphicon-remove"></span>', ['class' => 'remove btn btn-danger fa fa-plus', 'title' => 'Удалить', 'data-type' => $range->pcr_type])).'</td>';
+                    echo '<td>'.($disabled != '' ? '' : Html::tag('div', '<span class="glyphicon glyphicon-remove"></span>', ['class' => 'remove btn btn-danger fa fa-plus', 'title' => 'Удалить', 'data-type' => $range->pcr_type])).'</td>';
+                    echo '</tr>';
+                }
+            } else {
+                $usedTypes[1] = 1;
+                echo '<tr class="item">';
+                $disabled = 'readonly';
+                echo '<td><input class="form-control value" data-type="1" data-weight="0" '.$disabled.' type="text" value="0" name="count_ranges[1][pcr_value]"></td>';
+                echo '<td class="va-center">
+                            <input type="hidden" value="1" name="count_ranges[1][pcr_type]">
+                            <span style="color: #FF0000;">Отсутствует</span>
+                        </td>';
+                echo '<td>'.($disabled != '' ? '' : Html::tag('div', '<span class="glyphicon glyphicon-remove"></span>', ['class' => 'remove btn btn-danger fa fa-plus', 'title' => 'Удалить', 'data-type' => 1])).'</td>';
                 echo '</tr>';
             }
         ?>

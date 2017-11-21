@@ -144,3 +144,17 @@ h1 {
 .va-center {
     vertical-align: middle!important;
 }
+
+.counter .btn {
+    padding: 1px 6px 2px 6px;
+}
+
+.counter .count {
+    padding: 0 5px;
+    display: inline-block;
+}
+
+.counter .btn span{
+    font-size: 11px!important;
+
+}

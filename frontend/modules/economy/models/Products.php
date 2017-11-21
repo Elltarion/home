@@ -2,16 +2,17 @@
 
 namespace app\modules\economy\models;
 use app\modules\economy\models\ProductsCategories;
+use app\modules\economy\models\EconomyProductCountRanges;
 use Yii;
 
 /**
  * This is the model class for table "economy_products".
  *
- * @property integer $id
- * @property string $name
- * @property string $description
- * @property integer $category
- * @property integer $count
+ * @property integer $product_id
+ * @property string $product_name
+ * @property string $product_description
+ * @property integer $product_category
+ * @property integer $product_count
  */
 class Products extends \yii\db\ActiveRecord
 {
@@ -51,6 +52,17 @@ class Products extends \yii\db\ActiveRecord
             'product_count' => 'Наличие',
             'product_count_unit' => 'Ед. измерения',
         ];
+    }
+
+    public function beforeDelete()
+    {
+        //удаляем связи
+        EconomyProductCountRanges::deleteAll(['pcr_product' => $this->product_id]);
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+        // ...custom code here...
+        return true;
     }
 
     /**

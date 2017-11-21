@@ -87,5 +87,79 @@
                 chekTypes();
             })
         }
+
+        if($('.counter').length > 0) {
+            function changeCountProduct(productID, count) {
+                $.ajax({
+                    url: '/economy/products/change-count-product',
+                    type: 'POST',
+                    data: {id: productID, count: count},
+                    success: function (data) {
+                        console.log(data);
+                    }
+                });
+            }
+
+            $('body').on('click', '.counter .btn', function() {
+                /** @var int changeCount - на сколько меняем */
+                var changeCount = 1;
+                changeCount = $(this).hasClass('plus') ? changeCount : (changeCount * -1);
+                var parent = $(this).closest('.counter');
+                var valueSelector = parent.find('.count .value');
+                var unitSelector = parent.find('.count .unit');
+                var containerSelector = parent.find('.count');
+                var nullValue = valueSelector.attr('data-null');
+                var ranges = $.parseJSON(valueSelector.attr('data-ranges'));
+                var defaultColor = valueSelector.attr('data-defaultcolor');
+                var defaultColorNull = valueSelector.attr('data-defaultcolornull');
+                var productId = valueSelector.attr('data-product');
+                var finalCountValue = 0;
+
+                var currentVal = valueSelector.text();
+                if(currentVal == nullValue) {
+                    currentVal = 0;
+                }
+
+                currentVal = Number(currentVal) + Number(changeCount);
+                finalCountValue = currentVal;
+                if(currentVal <= 0) {
+                    currentVal = nullValue;
+                    unitSelector.addClass('hide');
+                    if(ranges.length > 0 && ranges[0]['count'] == 0) {
+                        containerSelector.css('color', ranges[0]['color']);
+                    } else {
+                        containerSelector.css('color', defaultColorNull);
+                    }
+                } else {
+                    unitSelector.removeClass('hide');
+                    if(ranges.length > 0) {
+                        var color = '';
+                        var checkStart = false;
+
+                        if(ranges.length == 1 && ranges[0]['type'] == 1) {
+                            color = defaultColor;
+                        } else {
+                            $.each(ranges, function(idx, range) {
+                                if(!checkStart && range.type != 1) {
+                                    color = range.color;
+                                    checkStart = true;
+                                }
+
+                                if(range.count <= currentVal) {
+                                    color = range.color;
+                                }
+                            });
+                        }
+                        containerSelector.css('color', color);
+                    } else {
+                        containerSelector.css('color', defaultColor);
+                    }
+                }
+
+                valueSelector.text(currentVal);
+                //сохраняем значение
+                changeCountProduct(productId, finalCountValue);
+            });
+        }
     });
    // parent.find('select[name=diapason_add_type] #crt_option_' + type).show();

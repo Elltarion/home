@@ -44,7 +44,7 @@ class ProductsSearch extends Products
      */
     public function search($params)
     {
-        $query = Products::find()->joinWith('unit')->joinWith('category')->joinWith('countRanges');
+        $query = Products::find()->joinWith('unit')->joinWith('category');
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([

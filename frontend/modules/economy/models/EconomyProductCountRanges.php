@@ -29,7 +29,8 @@ class EconomyProductCountRanges extends \yii\db\ActiveRecord
     {
         return [
             [['pcr_product', 'pcr_type', 'pcr_value'], 'required'],
-            [['pcr_product', 'pcr_type', 'pcr_value'], 'integer'],
+            [['pcr_product', 'pcr_type'], 'integer'],
+            [['pcr_value'], 'double'],
         ];
     }
 

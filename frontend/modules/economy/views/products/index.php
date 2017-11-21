@@ -45,30 +45,54 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value' => function ($model) {
                     $count = $model->product_count > 0 ? $model->product_count : 0;
                     $color = '';
+                    $sheckStart = false;
+                    $unitShow = true;
+                    $defaultColor = '#000';
+                    $defaultColorNull = 'red';
+                    $ranges = [];
+                    $countRanges = count($model['countRanges']);
 
-                    if(count($model['countRanges']) > 0) {
+                    if($countRanges > 0) {
                         foreach($model['countRanges'] as $range) {
+                            if(!$sheckStart && $range->pcr_type != 1 && $count > 0) {
+                                $color = $range['type']->clt_color;
+                                $sheckStart = true;
+                            }
+
                             if($range->pcr_value <= $count) {
                                 $color = $range['type']->clt_color;
                             }
+
+                            $ranges[] = ['count' => $range->pcr_value, 'type' => $range->pcr_type, 'color' => $range['type']->clt_color];
+                        }
+
+                        if($countRanges == 1 && $model['countRanges'][0]->pcr_type == 1 && $count != 0) {
+                            $color = $defaultColor;
                         }
                     } else {
                         if($count == 0) {
-                            $color = 'red';
+                            $color = $defaultColorNull;
                         } else {
-                            $color = '#000';
+                            $color = $defaultColor;
                         }
                     }
 
-                    if($count > 0) {
-                        $unit = $model['unit']['ut_name_small'];
-                        if($unit == '') {
-                            $unit = 'шт';
-                        }
-                        $count = $count .' '. $unit . '.';
+                    $unit = $model['unit']['ut_name_small'];
+                    if($unit == '') {
+                        $unit = 'шт.';
+                    } else {
+                        $unit .= '.';
                     }
 
-                    return Html::tag('span', $count, ['style' => ('color: '.$color.';')]);
+                    if($count <= 0) {
+                        $unitShow = false;
+                        $count = 'Нет'; //при смене обязательно заменить data-null у эл-тов
+                    }
+
+                    $fieldHTML = Html::tag('div', '<span class="value" data-product="'.$model->product_id.'" data-null="Нет" data-defaultcolor="'.$defaultColor.'" data-defaultcolornull="'.$defaultColorNull.'" data-ranges="'.htmlspecialchars(json_encode($ranges), ENT_QUOTES, 'UTF-8').'">'.$count.'</span> <span class="unit '.($unitShow ? '' : 'hide').'">'.$unit.'</span>', ['class' => 'count', 'style' => ('color: '.$color.';')]);
+                    $leftButtonHTML = Html::tag('div', '<span class="glyphicon glyphicon-minus"></span>', ['class' => 'btn minus btn-default']);
+                    $rightButtonHTML = Html::tag('div', '<span class="glyphicon glyphicon-plus"></span>', ['class' => 'btn plus btn-default']);
+                    return Html::tag('div', ($leftButtonHTML.$fieldHTML.$rightButtonHTML), ['class' => 'counter']);
                 }
             ],
 

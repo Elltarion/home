@@ -1,15 +1,16 @@
 <?php
 
 namespace app\modules\economy\models;
+use app\modules\economy\models\Products;
 
 use Yii;
 
 /**
  * This is the model class for table "economy_products_categories".
  *
- * @property integer $id
- * @property string $name
- * @property integer $sort
+ * @property integer $category_id
+ * @property string $category_name
+ * @property integer $category_sort
  */
 class ProductsCategories extends \yii\db\ActiveRecord
 {
@@ -47,10 +48,9 @@ class ProductsCategories extends \yii\db\ActiveRecord
 
     /**
      * @inheritdoc
-     * @return ProductsCategoriesSearch the active query used by this AR class.
      */
-    public static function find()
+    public function getProducts()
     {
-        return new ProductsCategoriesSearch(get_called_class());
+        return $this->hasMany(Products::className(), ['product_category' => 'category_id']);
     }
 }
